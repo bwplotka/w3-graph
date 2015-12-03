@@ -53,6 +53,7 @@ function init()
 	projector = new THREE.Projector();
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
+    createEnv(scene);
 	//var spritey = makeTextSprite( " Raczek. ",
 	//	{ fontsize: 24, fontface: "Georgia", borderColor: {r:0, g:0, b:1.0, a:1.0} } );
 	//spritey.position.set(100,70,100);
