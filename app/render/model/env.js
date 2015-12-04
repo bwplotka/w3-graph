@@ -5,9 +5,10 @@ var lineMaterial = new THREE.LineBasicMaterial( { color: 0x000088, side: THREE.D
 var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x0F1319, wireframe: true, transparent: true, side: THREE.DoubleSide} );
 var multiMaterial = [ darkMaterial, wireframeMaterial ];
 
+var CENTER = new THREE.Vector3(0, 0, 0);
 var PHI_SEGMENTS = 1;
 
-function WalrusSphere(radius, linewidth, theta, color) {
+function WalrusSphereRender(radius, linewidth, theta, color) {
     this.obj = new THREE.Group();
     this.ringMaterial = new THREE.MeshBasicMaterial(
         { color: color, wireframe: true, transparent: true, side: THREE.DoubleSide});
@@ -33,24 +34,37 @@ function WalrusSphere(radius, linewidth, theta, color) {
     this.obj.add(this.ringMesh3);
 }
 
-WalrusSphere.prototype.setPos = function(x,y,z){
+WalrusSphereRender.prototype.setPos = function(x,y,z){
     this.obj.position.set(x, y, z);
     this.obj.updateMatrix();
 };
 
-WalrusSphere.prototype.initScene = function(scene){
+WalrusSphereRender.prototype.initScene = function(scene){
     scene.add(this.obj);
 };
 
-function createEnv(scene) {
-    var walrusSphere = new WalrusSphere(200, 0.1, 64, 0x007403);
-    walrusSphere.setPos(0,0,0);
-    walrusSphere.initScene(scene);
+function createEnv(obj, enable_sphere, enable_center) {
+  if (enable_sphere) {
+    var walrusSphere = new WalrusSphereRender(200, 0.1, 64, 0x5c5c5c); // 0x007403
+    walrusSphere.setPos(CENTER.x, CENTER.y, CENTER.z);
+    walrusSphere.initScene(obj);
+  }
 
-    var dotGeometry = new THREE.Geometry();
-    dotGeometry.vertices.push(new THREE.Vector3( 0, 0, 0));
-    var dotMaterial = new THREE.PointCloudMaterial( { size: 1, sizeAttenuation: false } );
-    var dot = new THREE.PointCloud(dotGeometry, dotMaterial);
-    scene.add(dot);
+  if (enable_center) {
+    obj.add(createVertex(CENTER, 0xffffff));
+  }
 }
 
+function EnvironmentRender() {
+    this.obj = new THREE.Group();
+    createEnv(this.obj, true, true);
+}
+
+EnvironmentRender.prototype.setPos = function(x,y,z){
+    this.obj.position.set(x, y, z);
+    this.obj.updateMatrix();
+};
+
+EnvironmentRender.prototype.initScene = function(scene){
+    scene.add(this.obj);
+};
