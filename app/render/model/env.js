@@ -7,6 +7,7 @@ var multiMaterial = [ darkMaterial, wireframeMaterial ];
 
 var CENTER = new THREE.Vector3(0, 0, 0);
 var PHI_SEGMENTS = 1;
+var RADIUS = 200;
 
 function WalrusSphereRender(radius, linewidth, theta, color) {
     this.obj = new THREE.Group();
@@ -45,7 +46,7 @@ WalrusSphereRender.prototype.initScene = function(scene){
 
 function createEnv(obj, enable_sphere, enable_center) {
   if (enable_sphere) {
-    var walrusSphere = new WalrusSphereRender(200, 0.1, 64, 0x5c5c5c); // 0x007403
+    var walrusSphere = new WalrusSphereRender(RADIUS, 0.1, 64, 0x5c5c5c); // 0x007403
     walrusSphere.setPos(CENTER.x, CENTER.y, CENTER.z);
     walrusSphere.initScene(obj);
   }
