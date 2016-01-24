@@ -18,16 +18,17 @@ function createEdge(aVec, bVec, _color) {
 
 function GraphRender(graph, color) {
    this.obj = new THREE.Group();
-   this.parse(graph);
+   this.parseGraph(graph);
 }
 
 GraphRender.prototype.parseGraph = function(graph){
-   this.obj.position.set(x, y, z);
+  // TODO(bplotka): My todo graph to THREE objects.
+   //this.obj.position.set(x, y, z);
    this.obj.updateMatrix();
 };
 
 
-GraphRender.prototype.setPos = function(x,y,z){
+GraphRender.prototype.setPos = function(x, y, z){
    this.obj.position.set(x, y, z);
    this.obj.updateMatrix();
 };

@@ -1,60 +1,66 @@
 // standard global variables
 var container, scene, camera, renderer, controls;
 var keyboard = new THREEx.KeyboardState();
-var current_rack, projector, mouse = { x: 0, y: 0 }, INTERSECTED;
+var projector, mouse = { x: 0, y: 0 }, INTERSECTED;
 
 init();
 animate();
 
 function init()
 {
-  // Scene
-  scene = new THREE.Scene();
-  // Camera
-  var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-  var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 50, FAR = 20000;
-  camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-  scene.add(camera);
-  camera.position.set(0,0,500);
-  camera.lookAt(scene.position);
+    // Scene
+    scene = new THREE.Scene();
+    // Camera
+    var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+    var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 50, FAR = 20000;
+    camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+    scene.add(camera);
+    camera.position.set(0,0,500);
+    camera.lookAt(scene.position);
 
-	// Renderer
-  if (Detector.webgl )
+    // Renderer
+    if (Detector.webgl )
       renderer = new THREE.WebGLRenderer( {antialias:true, alpha:true} );
-  else
-	console.error("Cannot run WebGL here!")
+    else
+    console.error("Cannot run WebGL here!");
       //renderer = new THREE.CanvasRenderer();
 
-  renderer.setClearColor(0x000000, 1);
-  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+    renderer.setClearColor(0x000000, 1);
+    renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-  container = document.getElementById( 'w3-graph-main' );
-  container.appendChild( renderer.domElement );
+    container = document.getElementById( 'w3-graph-main' );
+    container.appendChild( renderer.domElement );
 
-  // Events
-  THREEx.WindowResize(renderer, camera);
-  THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+    // Events.
+    THREEx.WindowResize(renderer, camera);
+    THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 
-  // Controls
-  controls = new THREE.OrbitControls( camera, renderer.domElement );
+    // Controls.
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
 
-  scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
-	var pointLight =
-	new THREE.PointLight(0xFFCCFF);
+    scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+    var pointLight =
+    new THREE.PointLight(0xFFCCFF);
 
-	// set its position
-	pointLight.position.x = 100;
-	pointLight.position.y = 70;
-	pointLight.position.z = 500;
-	pointLight.intensity = 1.2;
-	// add to the scene
-	scene.add(pointLight);
+    // Set its position.
+    pointLight.position.x = 100;
+    pointLight.position.y = 70;
+    pointLight.position.z = 500;
+    pointLight.intensity = 1.2;
 
-	projector = new THREE.Projector();
-	document.addEventListener('mousemove', onDocumentMouseMove, false );
+    // Add to the scene.
+    scene.add(pointLight);
 
-  this.env = new EnvironmentRender();
-  this.env.initScene(scene);
+    projector = new THREE.Projector();
+    document.addEventListener('mousemove', onDocumentMouseMove, false );
+
+    this.env = new EnvironmentRender();
+    this.env.initScene(scene);
+
+    graphData = parseInput(null);
+
+    this.graph1 = new GraphRender(graphData, 0x12445d);
+    this.graph1.initScene(scene);
 
 	//var spritey = makeTextSprite( " Raczek. ",
 	//	{ fontsize: 24, fontface: "Georgia", borderColor: {r:0, g:0, b:1.0, a:1.0} } );
@@ -66,7 +72,7 @@ function init()
 	//scene.add( spritey );
 }
 
-function onDocumentMouseMove( event )
+function onDocumentMouseMove(event)
 {
 	// the following line would stop any other event handler from firing
 	// (such as the mouse's TrackballControls)
