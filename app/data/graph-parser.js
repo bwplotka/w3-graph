@@ -1,60 +1,67 @@
 var Graph = require('data-structures').Graph;
 
 // TODO(bplotka): @Piotr: Add parser from input to graph ( Graph https://github.com/chenglou/data-structures/wiki/Graph)
+var names = Object();
+
+
+function openFile(event ) {
+    var input = event.target;
+    var reader = new FileReader();
+    reader.onload = function() {
+        var text = reader.result;
+        parseInput(text);
+    }
+    reader.readAsText(input.files[0]);
+
+};
+
+function loadNames(event){
+    var input = event.target;
+    var reader = new FileReader();
+    reader.onload = function() {
+        var text = reader.result;
+        makeNames(text);
+    }
+    reader.readAsText(input.files[0]);
+}
 function parseInput(input_file) {
      // Debug (do same, dynamically!)
-
-    return debugGraph2();
-}
-
-function debugGraph2() {
-     graphData = new Graph();
-    graphData.addNode('1', 'root-wiki1', true);
-    graphData.addNode('1.1', 'wiki2');
-    graphData.addNode('1.2', 'wiki3');
-    graphData.addNode('1.3', 'wiki4');
-    graphData.addNode('1.4', 'wiki2');
-    graphData.addNode('1.5', 'wiki3');
-    graphData.addNode('1.6', 'wiki4');
-    graphData.addNode('1.7', 'wiki2');
-    graphData.addNode('1.8', 'wiki3');
-    graphData.addNode('1.9', 'wiki4');
-    graphData.addNode('1.10', 'wiki4');
-    graphData.addNode('1.2.1', 'wiki5');
-    graphData.addNode('1.2.2', 'wiki5');
-    graphData.addNode('1.2.3', 'wiki5');
-    graphData.addNode('1.2.4', 'wiki5');
-
-    graphData.addEdge('1','1.1');
-    graphData.addEdge('1','1.2');
-    graphData.addEdge('1','1.3');
-    graphData.addEdge('1','1.4');
-    graphData.addEdge('1','1.5');
-    graphData.addEdge('1','1.6');
-    graphData.addEdge('1','1.7');
-    graphData.addEdge('1','1.8');
-    graphData.addEdge('1','1.9');
-    graphData.addEdge('1','1.10');
-    graphData.addEdge('1.2','1.2.1');
-    graphData.addEdge('1.2','1.2.2');
-    graphData.addEdge('1.2','1.2.3');
-    graphData.addEdge('1.2','1.2.4');
-
-    return graphData;
-
-}
-
-function debugGraph1() {
     graphData = new Graph();
-    graphData.addNode('1', 'root-wiki1', true);
-    graphData.addNode('1.1', 'wiki2');
-    graphData.addNode('1.2', 'wiki3');
-    graphData.addNode('1.3', 'wiki4');
+    if (input_file) {
+        var linesArray = input_file.split("\n");
+        graphData.addNode(trim(linesArray[0].split("\t")[0]), "root",true);
+        for (var i =0 ; i < linesArray.length; i++) {
+            var currentLineArray = linesArray[i].split("\t");
+            graphData.addNode(trim(currentLineArray[0]), names[currentLineArray[0]]);
+            for (var j =1; j< currentLineArray.length; j++) {
+                if (currentLineArray[j] == "0") {
+                    break;
+                }
+                if (!graphData.getNode(trim(currentLineArray[j]))){
+                    graphData.addNode(trim(currentLineArray[j]),names[currentLineArray[j]])
+                }
+                graphData.addEdge(trim(currentLineArray[0]), trim(currentLineArray[j]))
+            }
+        }
+    }
 
-    graphData.addEdge('1','1.1');
-    graphData.addEdge('1','1.2');
-    graphData.addEdge('1','1.3');
-
+    console.log(graphData);
     return graphData;
+}
 
+function makeNames(input_file){
+    if (input_file){
+        var linesArray = input_file.split("\n");
+        for (var i =0 ; i < linesArray.length; i++) {
+            var currentLineArray = linesArray[i].split("\t");
+            for (var j =0; j< currentLineArray.length; j++) {
+                names[trim(currentLineArray[1])] = trim(currentLineArray[0])
+            }
+        }
+    }
+    console.log(names);
+}
+
+function trim(s){
+    return ( s || '' ).replace( /^\s+|\s+$/g, '' );
 }
