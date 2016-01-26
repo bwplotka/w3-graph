@@ -63,12 +63,13 @@ graph.removeEdge('A', 'B'); // => the edge object removed
   Graph = (function() {
     function Graph() {
       this._nodes = {};
+      this._levels = {};
       this.nodeSize = 0;
       this.edgeSize = 0;
     }
 
     // TODO(bplotka): Add additional properites here.
-    Graph.prototype._addNode = function(id, _name, _root) {
+    Graph.prototype.addNode = function(id, _name, _root) {
       /*
       The `id` is a unique identifier for the node, and should **not** change
       after it's added. It will be used for adding, retrieving and deleting
@@ -83,20 +84,24 @@ graph.removeEdge('A', 'B'); // => the edge object removed
       as to avoid accidental overrides.
       */
 
+      _root = _root || false;
+
+      if (_root) {
+        this.rootId = id;
+      }
       if (!this._nodes[id]) {
         this.nodeSize++;
         return this._nodes[id] = {
           _outEdges: {},
           _inEdges: {},
           name: _name,
-          root: _root
+          root: _root,
+          depth: 0,
+          _id: id,
+          obj: null,
+          position: null
         };
       }
-    };
-
-    // TODO(bplotka): Add additional properites here.
-    Graph.prototype.addNode = function(id, _name) {
-      this._addNode(id, _name, false);
     };
 
     Graph.prototype.getNode = function(id) {
@@ -106,6 +111,15 @@ graph.removeEdge('A', 'B'); // => the edge object removed
       */
 
       return this._nodes[id];
+    };
+
+    Graph.prototype.getRoot = function() {
+      /*
+      _Returns:_ the node object. Feel free to attach additional custom properties
+      on it for graph algorithms' needs.
+      */
+
+      return this._nodes[this.rootId];
     };
 
     Graph.prototype.removeNode = function(id) {
@@ -161,10 +175,23 @@ graph.removeEdge('A', 'B'); // => the edge object removed
         return;
       }
       edgeToAdd = {
+        from: fromId,
+        to: toId,
         weight: weight
       };
       fromNode._outEdges[toId] = edgeToAdd;
       toNode._inEdges[fromId] = edgeToAdd;
+
+      if (!this._levels[fromId]) {
+        this._levels[fromId] = {
+          size: 0,
+          members: []
+        };
+      }
+      this._levels[fromId].size++;
+      this._levels[fromId].members.push(toId);
+      // addEdge need to be ordered!
+      toNode.depth = fromNode.depth + 1;
       this.edgeSize++;
       return edgeToAdd;
     };
@@ -263,6 +290,23 @@ graph.removeEdge('A', 'B'); // => the edge object removed
         }
       }
       return inEdges.concat(outEdges);
+    };
+
+    Graph.prototype.calculateStats = function() {
+      this.depth = 1;
+      // BFS
+      var nodesToVisit = this.getOutEdgesOf(this.rootId);
+      while (nodesToVisit.length > 0) {
+        var currNodeId = nodesToVisit[0].to;
+        nodesToVisit.shift();
+
+        var children = this.getOutEdgesOf(currNodeId);
+        if (children.length > 0) {
+          this.depth++;
+          nodesToVisit = nodesToVisit.concat(children);
+        }
+      }
+      console.log("Graph depth: " + this.depth)
     };
 
     Graph.prototype.forEachNode = function(operation) {

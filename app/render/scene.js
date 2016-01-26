@@ -15,7 +15,7 @@ function init()
     var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 50, FAR = 20000;
     camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
     scene.add(camera);
-    camera.position.set(0,0,500);
+    camera.position.set(0,0,600);
     camera.lookAt(scene.position);
 
     // Renderer
@@ -59,7 +59,7 @@ function init()
 
     graphData = parseInput(null);
 
-    this.graph1 = new GraphRender(graphData, 0x12445d);
+    this.graph1 = new GraphRender(graphData);
     this.graph1.initScene(scene);
 
 	//var spritey = makeTextSprite( " Raczek. ",
