@@ -5,6 +5,10 @@ var names = Object();
 
 
 function openFile(event ) {
+    if (isEmpty(names)){
+        alert("Load labels first")
+        return
+    }
     var input = event.target;
     var reader = new FileReader();
     reader.onload = function() {
@@ -26,6 +30,7 @@ function loadNames(event){
 }
 function parseInput(input_file) {
      // Debug (do same, dynamically!)
+
     graphData = new Graph();
     if (input_file) {
         var linesArray = input_file.split("\n");
@@ -65,3 +70,34 @@ function makeNames(input_file){
 function trim(s){
     return ( s || '' ).replace( /^\s+|\s+$/g, '' );
 }
+
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+}
+
+    /* When the user clicks on the button,
+     toggle between hiding and showing the dropdown content */
+function dropDown() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        var i;
+        for (i = 0; i < dropdowns.length; i++) {
+            var openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+
