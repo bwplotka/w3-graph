@@ -57,19 +57,16 @@ function init()
     this.env = new EnvironmentRender();
     this.env.initScene(scene);
 
-    graphData = parseInput(null);
+    this.graph = null;
+}
 
-    this.graph1 = new GraphRender(graphData);
-    this.graph1.initScene(scene);
+function renderGraphOnScene(graphData) {
+  if (this.graph != null) {
+    // erase
+  }
 
-	//var spritey = makeTextSprite( " Raczek. ",
-	//	{ fontsize: 24, fontface: "Georgia", borderColor: {r:0, g:0, b:1.0, a:1.0} } );
-	//spritey.position.set(100,70,100);
-	//s_scale = spritey.scale;
-	//SCALE = 10
-	//spritey.scale.set(s_scale.x*SCALE,s_scale.y*SCALE,s_scale.z*SCALE);
-	//spritey.name = "txt";
-	//scene.add( spritey );
+  this.graph = new GraphRender(graphData);
+  this.graph.initScene(scene);
 }
 
 function onDocumentMouseMove(event)

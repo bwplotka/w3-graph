@@ -33,7 +33,7 @@ function GraphRender(graph, _colorNodes, _colorEdges) {
     this.colorEdges = _colorEdges || new THREE.Color(0x09ff00);
     this.sizeNode = 10;
     this.sizeEdge = 0.25;
-    this.detailedRenderNode = true;
+    this.detailedRenderNode = false;
     this.obj = new THREE.Object3D();
     this.parseGraph(graph);
 }
