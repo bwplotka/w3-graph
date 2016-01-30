@@ -72,13 +72,13 @@ function parseInput(input_file) {
             if (i == 0) {
               root = true;
             }
-            graphData.addNode(trim(currentLineArray[0]), names[currentLineArray[0]], root);
+            graphData.addNode(trim(currentLineArray[0]), names[trim(currentLineArray[0])], root);
             for (var j =1; j< currentLineArray.length; j++) {
                 if (currentLineArray[j] == "0") {
                     break;
                 }
                 if (!graphData.getNode(trim(currentLineArray[j]))){
-                    graphData.addNode(trim(currentLineArray[j]),names[currentLineArray[j]])
+                    graphData.addNode(trim(currentLineArray[j]),names[trim(currentLineArray[j])])
                 }
                 graphData.addEdge(trim(currentLineArray[0]), trim(currentLineArray[j]))
             }
