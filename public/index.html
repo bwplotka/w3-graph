@@ -4,6 +4,10 @@
     <style>
         body { margin: 0; background-color: black}
         canvas { width: 100%; height: 100% }
+        #nazwa{
+            font-size: 40px;
+            color: #AA4444;
+        }
         .dropbtn {
             background-color: #4CAF50;
             color: white;
@@ -83,6 +87,7 @@
 <script src="../app/data/data-structures.js"></script>
 <script src="../app/data/graph-parser.js"></script>
 <div id="w3-graph-main" style="position: absolute; left:0px; top:0px"></div>
+
 <div class="dropdown" id="w3-graph-menu" style="position: absolute; left:0px; top:0px">
     <button onclick="dropDown()" class="dropbtn">Menu</button>
     <div id="myDropdown" class="dropdown-content">
@@ -96,6 +101,7 @@
     </div>
 
 </div>
+<div id="nazwa" style="position: absolute; right:0px; top:0px"></div>
 
 <script src="../app/camera/arcball.js"></script>
 <script src="../app/oop/utils.js"></script>
