@@ -1233,7 +1233,7 @@ THREE.Projector = function () {
 
     this.unprojectVector = function ( vector, camera ) {
 
-        console.warn( 'THREE.Projector: .unprojectVector() is now vector.unproject().' );
+        //console.warn( 'THREE.Projector: .unprojectVector() is now vector.unproject().' );
         vector.unproject( camera );
 
     };

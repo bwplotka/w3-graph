@@ -100,6 +100,7 @@ GraphRender.prototype.renderLevel = function(ownerId){
     for (var i in lvlInfo.members) {
         var node = this.graph.getNode(lvlInfo.members[i]);
 
+
         var position = new THREE.Vector3();
         position.copy(owner.position);
 
@@ -114,6 +115,7 @@ GraphRender.prototype.renderLevel = function(ownerId){
 
         // Render NODE.
         node.obj = this.renderVertex(position);
+        node.obj.name = node.name;
         node.position = position;
         this.obj.add(node.obj);
 
@@ -137,3 +139,4 @@ GraphRender.prototype.setPos = function(x, y, z){
 GraphRender.prototype.initScene = function(scene){
    scene.add(this.obj);
 };
+

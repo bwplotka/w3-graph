@@ -1,6 +1,7 @@
 var Graph = require('data-structures').Graph;
 
 var names = Object();
+var graphData;
 
 function makeNames(inputFile){
     if (inputFile){
