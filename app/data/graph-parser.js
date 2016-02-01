@@ -20,20 +20,6 @@ function makeNames(inputFile) {
     console.log("Loaded Names:");
     console.log(names);
   }
-
-}
-
-function trim(s) {
-  return (s || '').replace(/^\s+|\s+$/g, '');
-}
-
-function isEmpty(obj) {
-  for (var prop in obj) {
-    if (obj.hasOwnProperty(prop))
-      return false;
-  }
-
-  return true;
 }
 
 function openFile(event) {
@@ -47,7 +33,11 @@ function openFile(event) {
     var text = reader.result;
     parseInput(text);
   }
-  reader.readAsText(input.files[0]);
+
+  inputData = input.files[0];
+  if (!isUndefined(inputData)){
+      reader.readAsText(inputData);
+  }
 };
 
 function loadNames(event) {
@@ -57,10 +47,16 @@ function loadNames(event) {
     var text = reader.result;
     makeNames(text);
   }
-  reader.readAsText(input.files[0]);
+
+  inputData = input.files[0];
+  if (!isUndefined(inputData)){
+      reader.readAsText(inputData);
+  }
+
 }
 
 function parseInput(input_file) {
+  console.log("Parse");
   graphData = new Graph();
   if (input_file) {
     var linesArray = input_file.split("\n");

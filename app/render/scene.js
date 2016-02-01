@@ -1,5 +1,5 @@
 // standard global variables
-var container, scene, camera, renderer, controls;
+var container, scene, camera, renderer, controls, graph;
 var keyboard = new THREEx.KeyboardState();
 var projector, mouse = {
     x: 0,
@@ -10,7 +10,15 @@ var projector, mouse = {
 init();
 animate();
 
+var CAMERA_Z, RADIUS, POINT_LIGHT_POS, POINT_LIGHT_INTENSITY, CENTER;
+
 function init() {
+  CAMERA_Z = 600;
+  RADIUS = 200;
+  CENTER = new THREE.Vector3(0, 0, 0);
+  POINT_LIGHT_INTENSITY = 2;
+  POINT_LIGHT_POS = new THREE.Vector3(300, 100, 200);
+
   // Scene
   scene = new THREE.Scene();
   // Camera
@@ -22,7 +30,7 @@ function init() {
     FAR = 20000;
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   scene.add(camera);
-  camera.position.set(0, 0, 600);
+  camera.position.set(0, 0, CAMERA_Z);
   camera.lookAt(scene.position);
 
   // Renderer
@@ -56,31 +64,42 @@ function init() {
     new THREE.PointLight(0xFFCCFF);
 
   // Set its position.
-  pointLight.position.x = 100;
-  pointLight.position.y = 70;
-  pointLight.position.z = 500;
-  pointLight.intensity = 1.2;
+  pointLight.position.x = -POINT_LIGHT_POS.x;
+  pointLight.position.y = 600;
+  pointLight.position.z = -POINT_LIGHT_POS.z;
+  pointLight.intensity = POINT_LIGHT_INTENSITY;
 
   // Add to the scene.
   scene.add(pointLight);
+
+  pointLight =
+    new THREE.PointLight(0xFFCCFF);
+
+  // Set its position.
+  pointLight.position.x = POINT_LIGHT_POS.x;
+  pointLight.position.y = POINT_LIGHT_POS.y;
+  pointLight.position.z = POINT_LIGHT_POS.z;
+  pointLight.intensity = POINT_LIGHT_INTENSITY;
+
+  // Add to the scene.
+  scene.add(pointLight);
+
 
   projector = new THREE.Projector();
   document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 
-  this.env = new EnvironmentRender();
+  this.env = new EnvironmentRender(CENTER, RADIUS);
   this.env.initScene(scene);
-
-  this.graph = null;
 }
 
 function renderGraphOnScene(graphData) {
-  if (this.graph != null) {
-    removeEntity(this.graph.obj);
+  if (!isEmpty(graph)) {
+    removeFromScene(graph.obj, scene);
   }
 
-  this.graph = new GraphRender("w3-graph", graphData);
-  this.graph.initScene(scene);
+  graph = new GraphRender("w3-graph", graphData);
+  graph.initScene(scene);
 }
 
 function onDocumentMouseMove(event) {
@@ -89,12 +108,6 @@ function onDocumentMouseMove(event) {
   // event.preventDefault();
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
-
-function removeEntity(object) {
-    var selectedObject = scene.getObjectByName(object.id);
-    scene.remove( selectedObject );
-    animate();
 }
 
 var need_key_change = false;
@@ -110,20 +123,19 @@ function update() {
 
   // create a Ray with origin at the mouse position
   //   and direction into the scene (camera direction)
-  if (!isEmpty(names) && !isEmpty(graphData)) {
+  if (!isEmpty(names) && !isEmpty(graphData) && !isEmpty(graph)) {
     var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
     projector.unprojectVector(vector, camera);
     var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
     // create an array containing all objects in the scene with which the ray intersects
-    var intersects = ray.intersectObjects(scene.children[3].children);
+    var intersects = ray.intersectObjects(graph.obj.children);
 
     // INTERSECTED = the object in the scene currently closest to the camera
     //		and intersected by the Ray projected from the mouse position
 
     // if there is one (or more) intersections
     if (intersects.length > 0) {
-
       // if the closest object intersected is not the currently stored intersection object
       if (intersects[0].object != INTERSECTED) {
 
@@ -135,7 +147,7 @@ function update() {
         // store color of closest object (for later restoration)
         INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
         // set a new color for closest object
-        INTERSECTED.material.color.setHex(0xffff00);
+        INTERSECTED.material.color.setHex(0x00ffff);
 
         // update text, if it has a "name" field.
         if (intersects[0].object.name) {

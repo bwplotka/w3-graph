@@ -99,7 +99,8 @@ graph.removeEdge('A', 'B'); // => the edge object removed
           depth: 0,
           _id: id,
           obj: null,
-          position: null
+          position: null,
+          parent: null
         };
       }
     };
@@ -166,30 +167,51 @@ graph.removeEdge('A', 'B'); // => the edge object removed
       the two nodes.
       */
 
+      // Check for duplicates.
       if (this.getEdge(fromId, toId)) {
         return;
       }
+
+      // Get Nodes.
       fromNode = this._nodes[fromId];
       toNode = this._nodes[toId];
       if (!fromNode || !toNode) {
         return;
       }
+
+      // Create edge.
       edgeToAdd = {
         from: fromId,
         to: toId,
         weight: weight
       };
+
+      // Save edge.
       fromNode._outEdges[toId] = edgeToAdd;
       toNode._inEdges[fromId] = edgeToAdd;
-
+      toNode.parent = fromId;
+      // Create lvl if not exists.
       if (!this._levels[fromId]) {
         this._levels[fromId] = {
           size: 0,
           members: []
         };
       }
-      this._levels[fromId].size++;
-      this._levels[fromId].members.push(toId);
+
+      // Add member for fromNode lvl (if it has no children)
+      if (this.getOutEdgesOf(toNode).length == 0) {
+        this._levels[fromId].size++;
+        this._levels[fromId].members.push(toId);
+      }
+
+      // Remove fromNode from his parent lvl, because now he has children!
+      if (fromId != this.rootId) {
+        index = this._levels[fromNode.parent].indexOf(fromId);
+        if (index > -1) {
+          this._levels[fromNode.parent].splice(index, 1);
+        }
+      }
+
       // addEdge need to be ordered!
       toNode.depth = fromNode.depth + 1;
       this.edgeSize++;

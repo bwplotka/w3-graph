@@ -18,9 +18,7 @@ var wireframeMaterial = new THREE.MeshBasicMaterial({
 });
 var multiMaterial = [darkMaterial, wireframeMaterial];
 
-var CENTER = new THREE.Vector3(0, 0, 0);
 var PHI_SEGMENTS = 1;
-var RADIUS = 200;
 
 function WalrusSphereRender(radius, linewidth, theta, color) {
   this.obj = new THREE.Group();
@@ -61,10 +59,10 @@ WalrusSphereRender.prototype.initScene = function(scene) {
   scene.add(this.obj);
 };
 
-function createEnv(obj, enable_sphere, enable_center) {
+function createEnv(obj, enable_sphere, enable_center, center, radius) {
   if (enable_sphere) {
-    var walrusSphere = new WalrusSphereRender(RADIUS, 0.1, 64, 0x5c5c5c); // 0x007403
-    walrusSphere.setPos(CENTER.x, CENTER.y, CENTER.z);
+    var walrusSphere = new WalrusSphereRender(radius, 0.1, 64, 0x5c5c5c); // 0x007403
+    walrusSphere.setPos(center.x, center.y, center.z);
     walrusSphere.initScene(obj);
   }
 
@@ -73,9 +71,11 @@ function createEnv(obj, enable_sphere, enable_center) {
   }
 }
 
-function EnvironmentRender() {
+function EnvironmentRender(_center, _radius) {
+  var center = _center || new THREE.Vector3(0,0,0);
+  var radius = _radius || 200;
   this.obj = new THREE.Group();
-  createEnv(this.obj, true, true);
+  createEnv(this.obj, true, true, center, radius);
 }
 
 EnvironmentRender.prototype.setPos = function(x, y, z) {

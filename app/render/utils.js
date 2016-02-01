@@ -8,6 +8,26 @@ function removeFromSceneByName(name, scene) {
   scene.remove(selectedObject);
 }
 
+function isEmpty(obj) {
+  for (var prop in obj) {
+    if (obj.hasOwnProperty(prop))
+      return false;
+  }
+  return true;
+}
+
+function isUndefined(obj) {
+  if (typeof obj === 'undefined') {
+    return true;
+  }
+  return false;
+}
+
+function trim(s) {
+  return (s || '').replace(/^\s+|\s+$/g, '');
+}
+
+// OBSOLETE
 function makeTextSprite(message, parameters) {
   if (parameters === undefined) parameters = {};
   var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
