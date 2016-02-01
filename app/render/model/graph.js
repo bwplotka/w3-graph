@@ -47,7 +47,7 @@ NodeRenderEnum = {
 function GraphRender(_name, _graph, _colorNodes, _colorEdges) {
   this.colorNodes = _colorNodes || new THREE.Color(0xffff00);
   this.colorEdges = _colorEdges || new THREE.Color(0x09ff00);
-  this.sizeNode = 2;
+  this.sizeNode = 20;
   this.sizeEdge = 0.2;
   this.detailedRenderNode = NodeRenderEnum.DETAILED;
   this.obj = new THREE.Object3D();
