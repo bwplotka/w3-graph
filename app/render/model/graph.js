@@ -47,7 +47,7 @@ NodeRenderEnum = {
 function GraphRender(_name, _graph, _colorNodes, _colorEdges) {
   this.colorNodes = _colorNodes || new THREE.Color(0xffff00);
   this.colorEdges = _colorEdges || new THREE.Color(0x09ff00);
-  this.sizeNode = 20;
+  this.sizeNode = 10;
   this.sizeEdge = 0.2;
   this.detailedRenderNode = NodeRenderEnum.DETAILED;
   this.obj = new THREE.Object3D();
@@ -99,7 +99,9 @@ GraphRender.prototype.parseGraph = function(_graph) {
     var children = this.graph.getOutEdgesOf(currEdge.to);
     if (children.length > 0) {
       var lvlDirection = new THREE.Vector3(0, 1, 0);
-      this.renderLevel(currEdge.to, lvlDirection, 20);
+      nodeSize = 5;
+      nodeInterval = 3;
+      this.renderLevel(currEdge.to, lvlDirection, nodeSize, nodeInterval);
 
       nodesToVisit = nodesToVisit.concat(children);
     }
@@ -109,13 +111,10 @@ GraphRender.prototype.parseGraph = function(_graph) {
   this.obj.updateMatrix();
 };
 
-var NODE_INTERVAL = 10;
-var MINIMAL_CIR_LENGTH = 100;
-
-
 GraphRender.prototype.renderLevel = function(ownerId,
                                              lvlDirection,
-                                             nodeSize) {
+                                             nodeSize,
+                                             nodeInterval) {
   // Get lvlInfo & owner.
   var lvlInfo = this.graph._levels[ownerId];
   var owner = this.graph.getNode(ownerId);
@@ -129,10 +128,10 @@ GraphRender.prototype.renderLevel = function(ownerId,
 
   // Calculate parameters.
   // Calculate area.
-  var area = lvlInfo.size * (nodeSize) * (nodeSize);
+  var area = lvlInfo.size * (nodeSize + nodeInterval) * (nodeSize + nodeInterval);
   radius = Math.sqrt(area / Math.PI);
 
-  var subLvls = Math.ceil(radius / (nodeSize));
+  var subLvls = Math.ceil(radius / (nodeSize + nodeInterval));
 
   console.log("Calculated radius:", radius, "Number of subLvls:", subLvls);
 
@@ -172,14 +171,18 @@ GraphRender.prototype.renderLevel = function(ownerId,
       summaricAngleRelY += angleRelY;
       var subLvlRadius = Math.sin(summaricAngleRelY) * radius;
       var cirLength = 2 * Math.PI * subLvlRadius;
-      numNodesOnSubLvl = cirLength / (NODE_INTERVAL + nodeSize);
+      numNodesOnSubLvl = cirLength / (nodeInterval + nodeSize);
 
       //console.log("All ", cirLength, subLvlRadius, numNodesOnSubLvl);
 
       nodesToGo = lvlInfo.size - i;
-      if (subLvlIndex == (subLvls - 1) || numNodesOnSubLvl <= 0) {
+      if (subLvlIndex == (subLvls - 1) || numNodesOnSubLvl <= 0 ||
+          numNodesOnSubLvl > (nodesToGo - numNodesOnSubLvl)) {
         numNodesOnSubLvl = nodesToGo;
       }
+
+      if (numNodesOnSubLvl)
+
       angleRelZ = (2 * Math.PI) / numNodesOnSubLvl;
 
     } else position.add(sphereVec);
