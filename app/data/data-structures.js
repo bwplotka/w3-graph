@@ -136,11 +136,12 @@ require = (function(e, t, n) {
               position: new THREE.Vector3(0, 0, 0),
               parentId: null,
               direction: new THREE.Vector3(0, 1, 0),
-              lastChildDirection: new THREE.Vector3(0, 1, 0),
               subNodes: 0, // Meaningful children.
               children: 0,
-              rotationPortion: new THREE.Vector3(0, 0, 0),
-              currRotAxis: "x"
+              deltaRotByAxisDir: 0,
+              rotByAxisDir: 0,
+              rotByAxisPerpDirA: 0,
+              rotByAxisPerpDirB: 0
             };
           }
         };
@@ -391,11 +392,12 @@ require = (function(e, t, n) {
                 currentNode.subNodes++;
               }
 
-              // Calculate rotationPortion. (Important)
-              currentNode.rotationPortion.x = 2 * Math.PI / (currentNode.subNodes);
-              currentNode.rotationPortion.y = Math.PI / (currentNode.subNodes);
-              currentNode.rotationPortion.z = Math.PI / (currentNode.subNodes);
-              console.log("Choosen rotation: ", currentNode.rotationPortion, "for node: ", currentNode);
+              // Calculate rotation. (Important)
+              currentNode.deltaRotByAxisDir = 2 * Math.PI / currentNode.subNodes;
+              currentNode.rotByAxisDir = currentNode.deltaRotByAxisDir;
+              currentNode.rotByAxisPerpDirA = (2 * Math.PI / 3)  - Math.PI / 4;
+              currentNode.rotByAxisPerpDirB = (2 * Math.PI / 6) - Math.PI / 2;
+
               nodesToVisit = nodesToVisit.concat(children);
             }
 

@@ -95,7 +95,8 @@ GraphRender.prototype.parseGraph = function(_graph) {
   this.graph.calculateStats();
 
   // Is that ok?
-  this.sizeNode = (2 * Math.PI * RADIUS) / this.graph.nodeSize;
+  this.sizeNode = (15) / this.graph.depth;
+  console.log(this.sizeNode);
   if (this.sizeNode > MAX_SIZE) {
     this.sizeNode = MAX_SIZE;
   }
@@ -107,10 +108,9 @@ GraphRender.prototype.parseGraph = function(_graph) {
   this.root = this.graph.getRoot();
   this.root.position = CENTER;
   this.root.obj = this.renderVertex(this.root.position, this.root.name, this.sizeNode);
-  this.root.lastChildDirection.copy(this.root.direction);
   this.obj.add(this.root.obj);
 
-  this.depthLength = (RADIUS - 20) / (this.graph.depth-1);
+  this.depthLength = (RADIUS - 20) / (this.graph.depth - 1);
   // BFS
   var nodesToVisit = [{
     to: this.graph.rootId
@@ -128,32 +128,34 @@ GraphRender.prototype.parseGraph = function(_graph) {
         // Get parent.
         var parentNode = this.graph.getNode(currentNode.parentId);
         // Map rotation from parent.
-        currentNode.direction.copy(parentNode.lastChildDirection);
+        currentNode.direction.copy(parentNode.direction);
+
+        // Calculate perpendicular vector.
+        var perpToCurrDir = new THREE.Vector3(0, 1, 0);
+        if (currentNode.direction.y != 0 || currentNode.direction.z != 0) {
+          perpToCurrDir = new THREE.Vector3(1, 0, 0);
+        }
+        perpToCurrDir.cross(currentNode.direction);
+        perpToCurrDir.normalize();
+
+        currentNode.direction.applyAxisAngle(perpToCurrDir,
+          Math.PI / 4);
 
         // Move to another direction.
-        switch (parentNode.currRotAxis) {
-          case "x":
-            console.log("Rotating X ", currentNode.direction);
-            currentNode.direction.applyAxisAngle(
-              X, parentNode.rotationPortion.x);
-            parentNode.currRotAxis = "y";
-            console.log("Rotating X ", currentNode.direction);
-            break;
-          case "y":
-            currentNode.direction.applyAxisAngle(
-              Y, parentNode.rotationPortion.y);
-            parentNode.currRotAxis = "z";
-            break;
-          case "z":
-            currentNode.direction.applyAxisAngle(
-              Z, parentNode.rotationPortion.z);
-            parentNode.currRotAxis = "x";
-            break;
+        currentNode.direction.applyAxisAngle(parentNode.direction,
+          parentNode.rotByAxisDir);
+
+        if ((parentNode.rotByAxisDir / parentNode.deltaRotByAxisDir) % 2 == 0) {
+          currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+            parentNode.rotByAxisPerpDirB);
+        } else {
+          currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+            parentNode.rotByAxisPerpDirA);
         }
 
+        parentNode.rotByAxisDir += parentNode.deltaRotByAxisDir;
+
         currentNode.direction.normalize();
-        // Save last value.
-        parentNode.lastChildDirection.copy(currentNode.direction);
 
         // Map position from parent.
         currentNode.position.copy(parentNode.position);
@@ -166,7 +168,6 @@ GraphRender.prototype.parseGraph = function(_graph) {
           this.sizeNode,
           currentNode.direction);
         this.obj.add(currentNode.obj);
-        currentNode.lastChildDirection.copy(currentNode.direction);
         // Render edge.
         var edgeObject = createEdge(
           parentNode.position,
