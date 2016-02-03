@@ -57,7 +57,7 @@ function loadNames(event) {
 
 function parseInput(input_file) {
   console.log("Parse");
-  graphData = new Graph();
+  graphData = new Graph(true);
   if (input_file) {
     var linesArray = input_file.split("\n");
     for (var i = 0; i < linesArray.length; i++) {
