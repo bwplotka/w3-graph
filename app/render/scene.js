@@ -131,6 +131,8 @@ function renderGraphOnScene(graphData) {
 
   // Add to the scene.
   scene.add(pointLights[1]);
+
+  controls.userPanSpeed = graph.radius / 30;
   graph.initScene(scene);
 }
 

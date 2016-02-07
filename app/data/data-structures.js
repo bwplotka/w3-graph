@@ -101,6 +101,9 @@ require = (function(e, t, n) {
           this.nodeSize = 0;
           this.edgeSize = 0;
           this.maxWidth = 0;
+          this.sumWidth = 0;
+          this.nodesWithChildren = 0;
+          this.maxDistanceToRoot = 0;
         }
 
         // TODO(bplotka): Add additional properites here.
@@ -139,11 +142,13 @@ require = (function(e, t, n) {
               parentId: null,
               direction: new THREE.Vector3(0, 1, 0),
               subNodes: 0, // Meaningful children.
+              edgeLength: 0,
               children: 0,
               deltaRotByAxisDir: 0,
               rotByAxisDir: 0,
               rotByAxisPerpDirA: 0,
-              rotByAxisPerpDirB: 0
+              rotByAxisPerpDirB: 0,
+              distanceToRoot: 0
             };
           }
         };
@@ -371,7 +376,8 @@ require = (function(e, t, n) {
           return inEdges.concat(outEdges);
         };
 
-        Graph.prototype.calculateStats = function() {
+        Graph.prototype.calculateStats = function(MIN_DEPTH_LENGTH,
+                                                  MIN_DEPTH_LENGTH_PART) {
           this.depth = 1; // Max
           // BFS
           var nodesToVisit = [{
@@ -386,8 +392,8 @@ require = (function(e, t, n) {
             } else {
               var parentNode = this.getNode(currentNode.parentId);
               currentNode.depth = parentNode.depth;
+              currentNode.distanceToRoot += parentNode.distanceToRoot;
             }
-
 
             var children = this.getOutEdgesOf(currentNode._id);
             if (children.length > 0) {
@@ -401,6 +407,18 @@ require = (function(e, t, n) {
               }
 
               this.maxWidth = Math.max(currentNode.subNodes, this.maxWidth);
+              this.sumWidth += currentNode.subNodes;
+              this.nodesWithChildren++;
+
+              currentNode.edgeLength =
+                Math.max(MIN_DEPTH_LENGTH,
+                         currentNode.subNodes * MIN_DEPTH_LENGTH_PART);
+              console.log(currentNode, "edgeLength: ",
+                          currentNode.edgeLength, " subNodes: ",
+                          currentNode.subNodes);
+
+              currentNode.distanceToRoot += currentNode.edgeLength;
+              this.maxDistanceToRoot = Math.max(currentNode.distanceToRoot, this.maxDistanceToRoot);
 
               // Calculate rotation. (Important)
               currentNode.deltaRotByAxisDir = 2 * Math.PI / currentNode.subNodes;
@@ -413,7 +431,9 @@ require = (function(e, t, n) {
 
             this.depth = Math.max(this.depth, currentNode.depth);
           }
-          console.log("Graph depth: " + this.depth, " maxWidth: ", this.maxWidth);
+          console.log("Graph depth: " + this.depth, " maxWidth: ", this.maxWidth,
+                      " avg width:", this.sumWidth / this.nodesWithChildren,
+                      " max distanceToRoot: ", this.maxDistanceToRoot);
         };
 
         Graph.prototype.forEachNode = function(operation) {

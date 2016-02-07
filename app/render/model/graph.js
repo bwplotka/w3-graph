@@ -99,15 +99,18 @@ var MIN_DEPTH_LENGTH = 60; // Min edge length
 
 GraphRender.prototype.parseGraph = function(_graph) {
   this.graph = _graph;
-  this.graph.calculateStats();
+  this.graph.calculateStats(MIN_DEPTH_LENGTH, MIN_DEPTH_LENGTH_PART);
 
   // OPTIMUM!
   this.sizeNode = 5;
   this.rootSize = 5;
   // Calculate radius:
   this.depthLength =
-    Math.max(MIN_DEPTH_LENGTH, this.graph.maxWidth * MIN_DEPTH_LENGTH_PART);
-  this.radius = this.depthLength * (this.graph.depth - 1) + 20;
+    Math.max(MIN_DEPTH_LENGTH,
+      (this.graph.sumWidth / this.graph.nodesWithChildren) * MIN_DEPTH_LENGTH_PART);
+  //this.radius = this.depthLength * (this.graph.depth - 1) + 20;
+  this.radius = Math.max(this.graph.maxDistanceToRoot,
+    this.depthLength * (this.graph.depth - 1) + 20);
 
   this.rootSize = Math.max((this.graph.maxWidth / 4), this.rootSize);
   console.log("Radius: ", this.radius, "rootSize: ", this.rootSize);
@@ -115,10 +118,10 @@ GraphRender.prototype.parseGraph = function(_graph) {
   this.root = this.graph.getRoot();
   this.root.position = this.center;
   this.root.obj = this.renderVertex(this.root.position,
-                                    this.root.name,
-                                    this.rootSize,
-                                    null,
-                                    true);
+    this.root.name,
+    this.rootSize,
+    null,
+    true);
   this.obj.add(this.root.obj);
 
   // BFS
@@ -160,7 +163,7 @@ GraphRender.prototype.parseGraph = function(_graph) {
             parentNode.rotByAxisPerpDirB);
         } else {
           currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
-            parentNode.rotByAxisPerpDirA);
+            parentNode.rotByAxisPerpDirA); //A);
         }
 
         parentNode.rotByAxisDir += parentNode.deltaRotByAxisDir;
@@ -170,7 +173,7 @@ GraphRender.prototype.parseGraph = function(_graph) {
         // Map position from parent.
         currentNode.position.copy(parentNode.position);
         currentNode.position.add(
-          (currentNode.direction.clone()).multiplyScalar(this.depthLength));
+          (currentNode.direction.clone()).multiplyScalar(parentNode.edgeLength));
 
         // Reneder vertex.
         currentNode.obj = this.renderVertex(currentNode.position,
@@ -286,7 +289,7 @@ GraphRender.prototype.renderLevel = function(ownerId,
 
       nodesToGo = lvlInfo.size - i;
       if (subLvlIndex == (subLvls - 1) || numNodesOnSubLvl <= 0 ||
-          numNodesOnSubLvl > (nodesToGo - numNodesOnSubLvl)) {
+        numNodesOnSubLvl > (nodesToGo - numNodesOnSubLvl)) {
         numNodesOnSubLvl = nodesToGo;
       }
       //console.log("Move down", subLvlIndex, "nodes:", numNodesOnSubLvl)
@@ -302,8 +305,8 @@ GraphRender.prototype.renderLevel = function(ownerId,
 
       //console.log(extendedSummaricAngleRelY, summaricAngleRelY);
       sphereVec.applyAxisAngle(perpToLvlDirection,
-         extendedSummaricAngleRelY - summaricAngleRelY);
-       summaricAngleRelY = extendedSummaricAngleRelY;
+        extendedSummaricAngleRelY - summaricAngleRelY);
+      summaricAngleRelY = extendedSummaricAngleRelY;
 
       if (numNodesOnSubLvl)
         angleRelZ = (2 * Math.PI) / (numNodesOnSubLvl);
