@@ -82,7 +82,7 @@ function parseInput(input_file) {
       }
     }
   }
-  console.log("loaded Graph");
+  console.log("loaded Graph: ", graphData);
   console.log(graphData);
 
   renderGraphOnScene(graphData);

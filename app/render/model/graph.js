@@ -52,26 +52,33 @@ NodeRenderEnum = {
   NONE: 3
 }
 
-function GraphRender(_name, _graph, _colorNodes, _colorEdges) {
+function GraphRender(_center, _name, _graph, _colorNodes, _colorEdges) {
   this.colorNodes = _colorNodes || new THREE.Color(0xffff00);
   this.colorEdges = _colorEdges || new THREE.Color(0x09ff00);
+  this.rootColor = new THREE.Color(0xff000f);
   this.sizeEdge = 0.2;
   this.detailedRenderNode = NodeRenderEnum.DETAILED;
   this.obj = new THREE.Object3D();
   this.obj.name = _name;
+  this.center = _center;
   this.parseGraph(_graph);
 }
 
-GraphRender.prototype.renderVertex = function(posVec, name, _size, _rotation) {
+GraphRender.prototype.renderVertex = function(posVec, name, _size, _rotation, _root) {
   var size = _size || this.sizeNode;
+  var root = false || _root;
+  var color = this.colorNodes;
+  if (root) {
+    color = this.rootColor;
+  }
   var rotation = _rotation || null;
   var vertex = null
   switch (this.detailedRenderNode) {
     case NodeRenderEnum.NORMAL:
-      vertex = createVertex(posVec, this.colorNodes, size, rotation);
+      vertex = createVertex(posVec, color, size, rotation);
       break;
     case NodeRenderEnum.DETAILED:
-      vertex = createCube(posVec, this.colorNodes, size, rotation);
+      vertex = createCube(posVec, color, size, rotation);
       break;
     case NodeRenderEnum.NONE:
       vertex = new THREE.Object3D();
@@ -87,30 +94,33 @@ var ROOT_NODE_SIZE = 5;
 var X = new THREE.Vector3(1, 0, 0);
 var Y = new THREE.Vector3(0, 1, 0);
 var Z = new THREE.Vector3(0, 0, 1);
-var MAX_SIZE = 5;
-var MIN_SIZE = 1;
+var MIN_DEPTH_LENGTH_PART = 8;
+var MIN_DEPTH_LENGTH = 60; // Min edge length
 
 GraphRender.prototype.parseGraph = function(_graph) {
   this.graph = _graph;
   this.graph.calculateStats();
 
-  // Is that ok?
-  this.sizeNode = (15) / this.graph.depth;
-  console.log(this.sizeNode);
-  if (this.sizeNode > MAX_SIZE) {
-    this.sizeNode = MAX_SIZE;
-  }
-  if (this.sizeNode < MIN_SIZE) {
-    this.sizeNode = MIN_SIZE;
-  }
+  // OPTIMUM!
+  this.sizeNode = 5;
+  this.rootSize = 5;
+  // Calculate radius:
+  this.depthLength =
+    Math.max(MIN_DEPTH_LENGTH, this.graph.maxWidth * MIN_DEPTH_LENGTH_PART);
+  this.radius = this.depthLength * (this.graph.depth - 1) + 20;
 
+  this.rootSize = Math.max((this.graph.maxWidth / 4), this.rootSize);
+  console.log("Radius: ", this.radius, "rootSize: ", this.rootSize);
   // Render root in the center.
   this.root = this.graph.getRoot();
-  this.root.position = CENTER;
-  this.root.obj = this.renderVertex(this.root.position, this.root.name, this.sizeNode);
+  this.root.position = this.center;
+  this.root.obj = this.renderVertex(this.root.position,
+                                    this.root.name,
+                                    this.rootSize,
+                                    null,
+                                    true);
   this.obj.add(this.root.obj);
 
-  this.depthLength = (RADIUS - 20) / (this.graph.depth - 1);
   // BFS
   var nodesToVisit = [{
     to: this.graph.rootId
@@ -209,7 +219,7 @@ GraphRender.prototype.renderLevel = function(ownerId,
   if (lvlInfo.size == 0)
     return;
 
-  var MIN_LVL_RADIUS = RADIUS / 10;
+  var MIN_LVL_RADIUS = this.radius / 10;
   var owner = this.graph.getNode(ownerId);
 
   // Calculate perpendicular vector.
@@ -235,9 +245,9 @@ GraphRender.prototype.renderLevel = function(ownerId,
   if (distanceCenterToOwner < 0)
     distanceCenterToOwner = 0;
 
-  var subLvls = Math.ceil(radius / (nodeSize + nodeInterval));
+  var subLvls = Math.ceil(radius / (nodeSize));
 
-  console.log("Calculated radius of lvl:", radius, " number of nodes: ", lvlInfo.size);
+  //console.log("----Calculated radius of lvl:", radius, " number of nodes: ", lvlInfo.size);
 
   // Calculate relative Axis.
   // Move down.
@@ -263,31 +273,43 @@ GraphRender.prototype.renderLevel = function(ownerId,
     position.add(
       (lvlDirection.clone()).multiplyScalar(distanceCenterToOwner));
 
-    // Add relative movement.
+    // Move to next subLVL.
     if (numNodesOnSubLvl <= 0) {
       subLvlIndex++;
-      //console.log("Move down", subLvlIndex);
       sphereVec.applyAxisAngle(perpToLvlDirection, angleRelY);
-      position.add(sphereVec);
-
       summaricAngleRelY += angleRelY;
+
       var subLvlRadius = Math.sin(summaricAngleRelY) * radius;
       var cirLength = 2 * Math.PI * subLvlRadius;
-      numNodesOnSubLvl = (cirLength - nodeInterval) / (nodeInterval + nodeSize);
-
-      //console.log("All ", cirLength, subLvlRadius, numNodesOnSubLvl);
+      numNodesOnSubLvl = Math.floor(
+        (cirLength - nodeInterval) / (nodeInterval + nodeSize));
 
       nodesToGo = lvlInfo.size - i;
       if (subLvlIndex == (subLvls - 1) || numNodesOnSubLvl <= 0 ||
-        numNodesOnSubLvl > (nodesToGo - numNodesOnSubLvl)) {
+          numNodesOnSubLvl > (nodesToGo - numNodesOnSubLvl)) {
         numNodesOnSubLvl = nodesToGo;
       }
+      //console.log("Move down", subLvlIndex, "nodes:", numNodesOnSubLvl)
+      // Calculate precised summaricAngleRelY
+      cirLength = numNodesOnSubLvl * (nodeInterval + nodeSize);
+      subLvlRadius = cirLength / (2 * Math.PI);
+
+      if (subLvlRadius > radius) {
+        subLvlRadius = radius;
+      }
+
+      var extendedSummaricAngleRelY = Math.asin(subLvlRadius / radius);
+
+      //console.log(extendedSummaricAngleRelY, summaricAngleRelY);
+      sphereVec.applyAxisAngle(perpToLvlDirection,
+         extendedSummaricAngleRelY - summaricAngleRelY);
+       summaricAngleRelY = extendedSummaricAngleRelY;
 
       if (numNodesOnSubLvl)
-        angleRelZ = (2 * Math.PI) / numNodesOnSubLvl;
+        angleRelZ = (2 * Math.PI) / (numNodesOnSubLvl);
+    }
 
-    } else position.add(sphereVec);
-
+    position.add(sphereVec);
     //console.log("Node: ", node, " pos ", position);
 
     // Render NODE.

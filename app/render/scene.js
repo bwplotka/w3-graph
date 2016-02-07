@@ -1,5 +1,6 @@
 // standard global variables
-var container, scene, camera, renderer, controls, graph;
+var container, scene, camera, renderer, controls, graph, env;
+var sphereRadius, camera_z, pointLightPos, pointLights;
 var keyboard = new THREEx.KeyboardState();
 var projector, mouse = {
     x: 0,
@@ -10,14 +11,14 @@ var projector, mouse = {
 init();
 animate();
 
-var CAMERA_Z, RADIUS, POINT_LIGHT_POS, POINT_LIGHT_INTENSITY, CENTER;
+var POINT_LIGHT_INTENSITY, CENTER;
 
 function init() {
-  CAMERA_Z = 600;
-  RADIUS = 200;
+  camera_z = 600;
+  sphereRadius = 200;
   CENTER = new THREE.Vector3(0, 0, 0);
   POINT_LIGHT_INTENSITY = 2;
-  POINT_LIGHT_POS = new THREE.Vector3(300, 100, 200);
+  pointLightPos = new THREE.Vector3(300, 100, 200);
 
   // Scene
   scene = new THREE.Scene();
@@ -30,7 +31,7 @@ function init() {
     FAR = 20000;
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   scene.add(camera);
-  camera.position.set(0, 0, CAMERA_Z);
+  camera.position.set(0, 0, camera_z);
   camera.lookAt(scene.position);
 
   // Renderer
@@ -60,37 +61,37 @@ function init() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
 
   scene.fog = new THREE.FogExp2(0x9999ff, 0.00025);
-  var pointLight =
-    new THREE.PointLight(0xFFCCFF);
 
+  pointLights = [];
+  pointLights.push(new THREE.PointLight(0xFFCCFF));
+  pointLights[0].name = "w3-walrus-pointLight1";
   // Set its position.
-  pointLight.position.x = -POINT_LIGHT_POS.x;
-  pointLight.position.y = 600;
-  pointLight.position.z = -POINT_LIGHT_POS.z;
-  pointLight.intensity = POINT_LIGHT_INTENSITY;
+  pointLights[0].position.x = -pointLightPos.x;
+  pointLights[0].position.y = 600;
+  pointLights[0].position.z = -pointLightPos.z;
+  pointLights[0].intensity = POINT_LIGHT_INTENSITY;
 
   // Add to the scene.
-  scene.add(pointLight);
+  scene.add(pointLights[0]);
 
-  pointLight =
-    new THREE.PointLight(0xFFCCFF);
+  pointLights.push(new THREE.PointLight(0xFFCCFF));
+  pointLights[1].name = "w3-walrus-pointLight2";
 
   // Set its position.
-  pointLight.position.x = POINT_LIGHT_POS.x;
-  pointLight.position.y = POINT_LIGHT_POS.y;
-  pointLight.position.z = POINT_LIGHT_POS.z;
-  pointLight.intensity = POINT_LIGHT_INTENSITY;
+  pointLights[1].position.x = pointLightPos.x;
+  pointLights[1].position.y = pointLightPos.y;
+  pointLights[1].position.z = pointLightPos.z;
+  pointLights[1].intensity = POINT_LIGHT_INTENSITY;
 
   // Add to the scene.
-  scene.add(pointLight);
+  scene.add(pointLights[1]);
 
 
   projector = new THREE.Projector();
   document.addEventListener('mousemove', onDocumentMouseMove, false);
 
-
-  this.env = new EnvironmentRender(CENTER, RADIUS);
-  this.env.initScene(scene);
+  env = new EnvironmentRender(CENTER, sphereRadius);
+  env.initScene(scene);
 }
 
 function renderGraphOnScene(graphData) {
@@ -98,7 +99,38 @@ function renderGraphOnScene(graphData) {
     removeFromScene(graph.obj, scene);
   }
 
-  graph = new GraphRender("w3-graph", graphData);
+  graph = new GraphRender(CENTER, "w3-graph", graphData);
+  removeFromScene(env.obj, scene);
+
+  // Refresh env
+  env = new EnvironmentRender(CENTER, graph.radius);
+  env.initScene(scene);
+
+  // Refresh camera
+  camera.position.set(0, 0, graph.radius*3);
+
+  // refresh lights:
+  for (var i in pointLights) {
+    removeFromScene(pointLights[i], scene);
+  }
+
+  // Set its position.
+  pointLights[0].position.x = -graph.radius*2;
+  pointLights[0].position.y = graph.radius*3;
+  pointLights[0].position.z = -graph.radius;
+  pointLights[0].intensity = POINT_LIGHT_INTENSITY;
+
+  // Add to the scene.
+  scene.add(pointLights[0]);
+
+  // Set its position.
+  pointLights[1].position.x = graph.radius*2;
+  pointLights[1].position.y = graph.radius/2;
+  pointLights[1].position.z = graph.radius;
+  pointLights[1].intensity = POINT_LIGHT_INTENSITY;
+
+  // Add to the scene.
+  scene.add(pointLights[1]);
   graph.initScene(scene);
 }
 

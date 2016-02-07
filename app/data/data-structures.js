@@ -100,6 +100,7 @@ require = (function(e, t, n) {
           this._levels = {};
           this.nodeSize = 0;
           this.edgeSize = 0;
+          this.maxWidth = 0;
         }
 
         // TODO(bplotka): Add additional properites here.
@@ -122,6 +123,7 @@ require = (function(e, t, n) {
 
           if (_root) {
             this.rootId = id;
+            console.log("Added Root: ", id);
           }
           if (!this._nodes[id]) {
             this.nodeSize++;
@@ -254,6 +256,12 @@ require = (function(e, t, n) {
 
           // Remove fromNode from his parent lvl, because now he has a child!
           if (fromId != this.rootId) {
+            if (!this._levels[fromNode.parentId]) {
+                this._levels[fromNode.parentId] = {
+                  size: 0,
+                  members: []
+                };
+            }
             index = this._levels[fromNode.parentId].members.indexOf(fromId);
             if (index > -1) {
               this._levels[fromNode.parentId].members.splice(index, 1);
@@ -392,6 +400,8 @@ require = (function(e, t, n) {
                 currentNode.subNodes++;
               }
 
+              this.maxWidth = Math.max(currentNode.subNodes, this.maxWidth);
+
               // Calculate rotation. (Important)
               currentNode.deltaRotByAxisDir = 2 * Math.PI / currentNode.subNodes;
               currentNode.rotByAxisDir = currentNode.deltaRotByAxisDir;
@@ -403,7 +413,7 @@ require = (function(e, t, n) {
 
             this.depth = Math.max(this.depth, currentNode.depth);
           }
-          console.log("Graph depth: " + this.depth)
+          console.log("Graph depth: " + this.depth, " maxWidth: ", this.maxWidth);
         };
 
         Graph.prototype.forEachNode = function(operation) {

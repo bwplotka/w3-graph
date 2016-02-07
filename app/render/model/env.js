@@ -22,6 +22,7 @@ var PHI_SEGMENTS = 1;
 
 function WalrusSphereRender(radius, linewidth, theta, color) {
   this.obj = new THREE.Group();
+  this.obj.name = 'w3-walrus-sphere';
   this.ringMaterial = new THREE.MeshBasicMaterial({
     color: color,
     wireframe: true,
@@ -75,6 +76,7 @@ function EnvironmentRender(_center, _radius) {
   var center = _center || new THREE.Vector3(0,0,0);
   var radius = _radius || 200;
   this.obj = new THREE.Group();
+  this.obj.name = 'w3-walrus-env';
   createEnv(this.obj, true, true, center, radius);
 }
 
