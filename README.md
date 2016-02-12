@@ -94,7 +94,10 @@ Additionally, we calculate the needed `RADIUS` of a sphere in which we render ou
 All data are calculated using [BFS](https://en.wikipedia.org/wiki/Breadth-first_search) in file `app/data/data-structures.js`.
 
 3. _Rendering phase._ This stage calculates position of the nodes and edges in the sphere.
-algorithm:
+
+![Level-Axis](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-axis.PNG)
+
+Algorithm steps:
   1. Use BFS and foreach node:
     1. Get all children of this node.
     2. If the node has not any children then it is a leaf and was rendered in his parent `level` so continue to i.
