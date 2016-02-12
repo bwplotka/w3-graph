@@ -120,13 +120,14 @@ algorithm:
     3. If it has leaf children then render `level` in specified node `direction`:
       * Check the _rendering level phase_ below
     4. Add children to `nodesToVisis` BFS list
+This stage is done in `app/render/model/graph.js`.
 
 4. _Rendering level phase._ This stage is included in _Rendernig phase_ but it also quite complex so i have created additional phase for that.
 
  ![Level-Algorithm](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-alg.png)
 
  The algorithm goes as follows:
- 
+
   1. Calculate perpendicular `Vector3` to given `direction` of the owner.
   2. Calculate area of the square made with all `members` of the `level` with some interval between (all leafs of the owner)
   3. Find radius of a circle which covers area calculated in 2
@@ -153,11 +154,23 @@ algorithm:
     13. Move `position` using `sphereVec` indicator.
     14. Render vertex in `position` in `direction` of the owner
     15. Render edge from owner to leaf
-    16. Apply a `angleRelY` rotation to `sphereVec` (our direction & distance ndicator)
+    16. Apply a `angleRelY` rotation to `sphereVec` (our direction & distance indicator)
     17. Decrement `numNodesOnSubLvl`
 
-## Next Steps:
+This stage is done in `app/render/model/graph.js`
 
-When the input contains large, wide tree, the visualization could be not clear due to many intersections.
-This need to be fixed as a next steps.
-When the input contains large, deep tree, the `w3-walrus` will handle it gracefully.
+## Next Steps & TODOs:
+
+1. When the input contains large, wide tree, the visualization could be not clear due to many intersections. When the input contains large, deep tree, the `w3-walrus` will handle it gracefully. _This should be fixed_ as a first next step. The ideas to mitigate that:
+
+  * Improve distribution of the children using more various angles based on the adjacent nodes. (check  `3 _Rendering phase._ -> i -> b -> b-> e` algorithm step)
+  * Improve rendering algorithm with conflicts detection. If we firstly prepare the `levels` we will be aware of their size. As a result we can implement the [Knapsack algorithm](https://en.wikipedia.org/wiki/Knapsack_problem) which will distribute the `level` properly without conflicts and intersections. This will take a lot of work though. ((:
+
+2. Walrus could have panel for node information retrieval & editing. Work steps:
+  1. Extend node info in `app/data/data-structures.js`
+  2. Create UI panel for parameters presentation and editing
+  3. Exporting to `csv` module
+
+3. Support for other graph formats e.g `GML`, `GRXL`
+4. Validation of graph (too many nodes etc)
+5. Benchmarking (Max number of nodes)
