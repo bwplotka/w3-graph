@@ -37,7 +37,7 @@ Make sure there is no `new line` at the end of your files.
 Author: [Bplotka](https://github.com/Bplotka).
 
 
-Currently, algorithm is able to distribute & render thousands of nodes in couple seconds.
+Currently, algorithm is able to distribute & render thousands of nodes in couple of seconds.
 
 The algorithm includes several steps:
 * _Parsing phase._ Parsing input in two .CSV to the js graph structure.
@@ -119,8 +119,11 @@ algorithm:
         * If it has leaf children then render `level` in specified node `direction`:
           * Check the _rendering level phase_ below
         * Add children to `nodesToVisis` BFS list
- * _Rendering level phase._ This stage is included in _Rendernig phase_ but it also quite complex so i've created additional phase for that. The algorithm goes as follows:
+ * _Rendering level phase._ This stage is included in _Rendernig phase_ but it also quite complex so i have created additional phase for that.
+
  ![Level-Algorithm](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-alg.PNG)
+
+ The algorithm goes as follows:
    1. Calculate perpendicular `Vector3` to given `direction` of the owner.
    2. Calculate area of the square made with all `members` of the `level` with some interval between (all leafs of the owner)
    3. Find radius of a circle which covers area calculated in 2
@@ -130,8 +133,7 @@ algorithm:
    7. Calculate initial `sphereVec` which simply indicates the movement from owner to leaf localization.
    8. `numNodesOnSubLvl` = 1 since we have only one leaf on the top.
    9. Init `angleRelY` (rotation around relative Y axis). For the first leaf it does not matter. It will indicates on how many degree we should rotate around center of the sphere (360 / `numNodesOnSubLvl`)
- ![Level-Axis](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-axis.PNG)
-   8. Foreach `level` `member`:
+   10. Foreach `level` `member`:
      * Copy `position` from `owner`. Compose base position.
      * If we need to move down (if `numNodesOnSubLvl` <= 0)
         * Apply a `angleRelX` rotation to `sphereVec` to move down the sphere by perpendicular to direction vector
