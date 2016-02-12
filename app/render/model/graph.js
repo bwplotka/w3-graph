@@ -96,6 +96,7 @@ var Y = new THREE.Vector3(0, 1, 0);
 var Z = new THREE.Vector3(0, 0, 1);
 var MIN_DEPTH_LENGTH_PART = 8;
 var MIN_DEPTH_LENGTH = 60; // Min edge length
+var INITIAL_Y_ROTATION = Math.PI / 4;
 
 GraphRender.prototype.parseGraph = function(_graph) {
   this.graph = _graph;
@@ -135,76 +136,95 @@ GraphRender.prototype.parseGraph = function(_graph) {
 
     // Get Children of TO Node.
     var children = this.graph.getOutEdgesOf(currentNode._id);
-    if (children.length > 0) {
-      // When it has children it needs to be rendered (except the root).
-      if (currentNode._id != this.graph.rootId) {
-        // Get parent.
-        var parentNode = this.graph.getNode(currentNode.parentId);
-        // Map rotation from parent.
-        currentNode.direction.copy(parentNode.direction);
+    if (children.length == 0) {
+      // This node is a leaf andr was rendered in his parent `level`.
+      continue;
+    }
+    // When it has children it needs to be rendered (except the root).
+    if (currentNode._id != this.graph.rootId) {
+      // Get parent.
+      var parentNode = this.graph.getNode(currentNode.parentId);
+      // Map rotation from parent.
+      currentNode.direction.copy(parentNode.direction);
 
-        // Calculate perpendicular vector.
-        var perpToCurrDir = new THREE.Vector3(0, 1, 0);
-        if (currentNode.direction.y != 0 || currentNode.direction.z != 0) {
-          perpToCurrDir = new THREE.Vector3(1, 0, 0);
-        }
-        perpToCurrDir.cross(currentNode.direction);
-        perpToCurrDir.normalize();
+      // Calculate perpendicular vector.
+      var perpToCurrDir = new THREE.Vector3(0, 1, 0);
+      if (currentNode.direction.y != 0 || currentNode.direction.z != 0) {
+        perpToCurrDir = new THREE.Vector3(1, 0, 0);
+      }
+      perpToCurrDir.cross(currentNode.direction);
+      perpToCurrDir.normalize();
 
-        currentNode.direction.applyAxisAngle(perpToCurrDir,
-          Math.PI / 4);
+      currentNode.direction.applyAxisAngle(perpToCurrDir,
+        INITIAL_Y_ROTATION);
 
-        // Move to another direction.
-        currentNode.direction.applyAxisAngle(parentNode.direction,
-          parentNode.rotByAxisDir);
-
-        if ((parentNode.rotByAxisDir / parentNode.deltaRotByAxisDir) % 2 == 0) {
+      // Move to another direction.
+      currentNode.direction.applyAxisAngle(parentNode.direction,
+        parentNode.rotByAxisDir);
+      if (parentNode.root) {
+        var modRes = (parentNode.rotByAxisDir / parentNode.deltaRotByAxisDir) % 4;
+        if (modRes == 0) {
           currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
             parentNode.rotByAxisPerpDirB);
+        } else if (modRes == 1) {
+          currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+            2*parentNode.rotByAxisPerpDirB);
+        } else if(modRes == 2) {
+          currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+            parentNode.rotByAxisPerpDirA);
         } else {
           currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
-            parentNode.rotByAxisPerpDirA); //A);
+            2*parentNode.rotByAxisPerpDirA);
         }
-
-        parentNode.rotByAxisDir += parentNode.deltaRotByAxisDir;
-
-        currentNode.direction.normalize();
-
-        // Map position from parent.
-        currentNode.position.copy(parentNode.position);
-        currentNode.position.add(
-          (currentNode.direction.clone()).multiplyScalar(parentNode.edgeLength));
-
-        // Reneder vertex.
-        currentNode.obj = this.renderVertex(currentNode.position,
-          currentNode.name,
-          this.sizeNode,
-          currentNode.direction);
-        this.obj.add(currentNode.obj);
-        // Render edge.
-        var edgeObject = createEdge(
-          parentNode.position,
-          currentNode.position,
-          this.colorEdges,
-          this.sizeEdge);
-        // Currently edge contains target name.
-        edgeObject.name = currentNode.name;
-        this.obj.add(edgeObject);
-        //console.log("Rendered ", currentNode);
+      } else {
+        // if ((parentNode.rotByAxisDir / parentNode.deltaRotByAxisDir) % 2 == 0) {
+        //   currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+        //     parentNode.rotByAxisPerpDirB);
+        // } else {
+        //   currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+        //     parentNode.rotByAxisPerpDirA);
+        // }
+        currentNode.direction.applyAxisAngle(perpToCurrDir.clone(),
+          parentNode.rotByAxisPerpDirB);
       }
 
-      nodeSize = this.sizeNode;
-      nodeInterval = 3;
-      this.renderLevel(currentNode._id,
-        currentNode.direction,
-        0,
-        nodeSize,
-        nodeInterval);
+      parentNode.rotByAxisDir += parentNode.deltaRotByAxisDir;
 
-      //console.log("Lvl of ", currentNode);
-      nodesToVisit = nodesToVisit.concat(children);
+      currentNode.direction.normalize();
+
+      // Map position from parent.
+      currentNode.position.copy(parentNode.position);
+      currentNode.position.add(
+        (currentNode.direction.clone()).multiplyScalar(parentNode.edgeLength));
+
+      // Reneder vertex.
+      currentNode.obj = this.renderVertex(currentNode.position,
+        currentNode.name,
+        this.sizeNode,
+        currentNode.direction);
+      this.obj.add(currentNode.obj);
+      // Render edge.
+      var edgeObject = createEdge(
+        parentNode.position,
+        currentNode.position,
+        this.colorEdges,
+        this.sizeEdge);
+      // Currently edge contains target name.
+      edgeObject.name = currentNode.name;
+      this.obj.add(edgeObject);
+      //console.log("Rendered ", currentNode);
     }
-    // If current node has not any child, then it is included in render lvl.
+
+    nodeSize = this.sizeNode;
+    nodeInterval = 3;
+    this.renderLevel(currentNode._id,
+      currentNode.direction,
+      0,
+      nodeSize,
+      nodeInterval);
+
+    //console.log("Lvl of ", currentNode);
+    nodesToVisit = nodesToVisit.concat(children);
   }
 
   //this.obj.position.set(x, y, z);
@@ -254,11 +274,11 @@ GraphRender.prototype.renderLevel = function(ownerId,
 
   // Calculate relative Axis.
   // Move down.
-  var angleRelY = ((2 * Math.PI) / 3) / subLvls;
-  var summaricAngleRelY = 0;
+  var angleRelX = ((2 * Math.PI) / 3) / subLvls;
+  var summaricAngleRelX = 0;
   // Move right.
   var numNodesOnSubLvl = 1;
-  var angleRelZ = 0;
+  var angleRelY = 0;
 
   var subLvlIndex = 0;
   // Relative sphere indicator (from center).
@@ -279,10 +299,10 @@ GraphRender.prototype.renderLevel = function(ownerId,
     // Move to next subLVL.
     if (numNodesOnSubLvl <= 0) {
       subLvlIndex++;
-      sphereVec.applyAxisAngle(perpToLvlDirection, angleRelY);
-      summaricAngleRelY += angleRelY;
+      sphereVec.applyAxisAngle(perpToLvlDirection, angleRelX);
+      summaricAngleRelX += angleRelX;
 
-      var subLvlRadius = Math.sin(summaricAngleRelY) * radius;
+      var subLvlRadius = Math.sin(summaricAngleRelX) * radius;
       var cirLength = 2 * Math.PI * subLvlRadius;
       numNodesOnSubLvl = Math.floor(
         (cirLength - nodeInterval) / (nodeInterval + nodeSize));
@@ -293,7 +313,7 @@ GraphRender.prototype.renderLevel = function(ownerId,
         numNodesOnSubLvl = nodesToGo;
       }
       //console.log("Move down", subLvlIndex, "nodes:", numNodesOnSubLvl)
-      // Calculate precised summaricAngleRelY
+      // Calculate precised summaricAngleRelX
       cirLength = numNodesOnSubLvl * (nodeInterval + nodeSize);
       subLvlRadius = cirLength / (2 * Math.PI);
 
@@ -301,15 +321,15 @@ GraphRender.prototype.renderLevel = function(ownerId,
         subLvlRadius = radius;
       }
 
-      var extendedSummaricAngleRelY = Math.asin(subLvlRadius / radius);
+      var extendedsummaricAngleRelX = Math.asin(subLvlRadius / radius);
 
-      //console.log(extendedSummaricAngleRelY, summaricAngleRelY);
+      //console.log(extendedsummaricAngleRelX, summaricAngleRelX);
       sphereVec.applyAxisAngle(perpToLvlDirection,
-        extendedSummaricAngleRelY - summaricAngleRelY);
-      summaricAngleRelY = extendedSummaricAngleRelY;
+        extendedsummaricAngleRelX - summaricAngleRelX);
+      summaricAngleRelX = extendedsummaricAngleRelX;
 
       if (numNodesOnSubLvl)
-        angleRelZ = (2 * Math.PI) / (numNodesOnSubLvl);
+        angleRelY = (2 * Math.PI) / (numNodesOnSubLvl);
     }
 
     position.add(sphereVec);
@@ -332,7 +352,7 @@ GraphRender.prototype.renderLevel = function(ownerId,
 
     // Apply next sphereVec position.
     // Rotate in relative Y axis.
-    sphereVec.applyAxisAngle(lvlDirection, angleRelZ);
+    sphereVec.applyAxisAngle(lvlDirection, angleRelY);
     numNodesOnSubLvl--;
   }
 };

@@ -376,6 +376,8 @@ require = (function(e, t, n) {
           return inEdges.concat(outEdges);
         };
 
+        var ROT_A_ANGLE = ((2 * Math.PI) / 3)  - Math.PI / 4; // 75 degrees
+        var ROT_B_ANGLE = - (Math.PI / 8); // -22 degrees. (don't ask me why :))
         Graph.prototype.calculateStats = function(MIN_DEPTH_LENGTH,
                                                   MIN_DEPTH_LENGTH_PART) {
           this.depth = 1; // Max
@@ -423,8 +425,8 @@ require = (function(e, t, n) {
               // Calculate rotation. (Important)
               currentNode.deltaRotByAxisDir = 2 * Math.PI / currentNode.subNodes;
               currentNode.rotByAxisDir = currentNode.deltaRotByAxisDir;
-              currentNode.rotByAxisPerpDirA = (2 * Math.PI / 3)  - Math.PI / 4;
-              currentNode.rotByAxisPerpDirB = (2 * Math.PI / 6) - Math.PI / 2;
+              currentNode.rotByAxisPerpDirA = ROT_A_ANGLE;
+              currentNode.rotByAxisPerpDirB = ROT_B_ANGLE;
 
               nodesToVisit = nodesToVisit.concat(children);
             }
