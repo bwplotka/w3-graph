@@ -121,37 +121,37 @@ algorithm:
         * Add children to `nodesToVisis` BFS list
  * _Rendering level phase._ This stage is included in _Rendernig phase_ but it also quite complex so i have created additional phase for that.
 
- ![Level-Algorithm](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-alg.PNG)
+ ![Level-Algorithm](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-alg.png)
 
  The algorithm goes as follows:
-   1. Calculate perpendicular `Vector3` to given `direction` of the owner.
-   2. Calculate area of the square made with all `members` of the `level` with some interval between (all leafs of the owner)
-   3. Find radius of a circle which covers area calculated in 2
-   4. Check if radius is not smaller than MIN_LVL_RADIUS (which is sphere radius / 10)
-   5. Calculate how many sub levels (rings) can be placed within our circle.
-   6. Calculate relative X angle (How we should move down in 3D sphere around the relative X axis). Divide 120 degrees by number of `subLevels` (We want to have this special `flower` look)
-   7. Calculate initial `sphereVec` which simply indicates the movement from owner to leaf localization.
-   8. `numNodesOnSubLvl` = 1 since we have only one leaf on the top.
-   9. Init `angleRelY` (rotation around relative Y axis). For the first leaf it does not matter. It will indicates on how many degree we should rotate around center of the sphere (360 / `numNodesOnSubLvl`)
-   10. Foreach `level` `member`:
-     * Copy `position` from `owner`. Compose base position.
-     * If we need to move down (if `numNodesOnSubLvl` <= 0)
-        * Apply a `angleRelX` rotation to `sphereVec` to move down the sphere by perpendicular to direction vector
-        * Add `angleRelX` to `summaricAngleRelX`
-        * Calculate how many nodes can be in the given radius after moving down:
-          * Calculate `subRadius` (sin(`summaricAngleRelX`) * radius)
-          * Calculate circuit length
-          * Calculate how many nodes (leafs) can be placed within given circuit
-        * If it is the last `subLvl` or there is no space for any leaf on `subLvl` or there are less nodes to be placed in next `subLvl` than in current:
-          * Take all leafs which have not been placed yet and place to `numNodesOnSubLvl`.
-        * Create reverse calculation to obtain the needed `angleRelX` from circuit length made by all `numNodesOnSubLvl`. (This is needed to fix the overlapping leafs)
-        * Apply new rotation to the `sphereVec`
-        * Calculate `angleRelY` knowing the number of nodes in `subLvl`
-     * Move `position` using `sphereVec` indicator.
-     * Render vertex in `position` in `direction` of the owner
-     * Render edge from owner to leaf
-     * Apply a `angleRelY` rotation to `sphereVec` (our direction & distance indicator)
-     * Decrement `numNodesOnSubLvl`
+  1. Calculate perpendicular `Vector3` to given `direction` of the owner.
+  2. Calculate area of the square made with all `members` of the `level` with some interval between (all leafs of the owner)
+  3. Find radius of a circle which covers area calculated in 2
+  4. Check if radius is not smaller than MIN_LVL_RADIUS (which is sphere radius / 10)
+  5. Calculate how many sub levels (rings) can be placed within our circle.
+  6. Calculate relative X angle (How we should move down in 3D sphere around the relative X axis). Divide 120 degrees by number of `subLevels` (We want to have this special `flower` look)
+  7. Calculate initial `sphereVec` which simply indicates the movement from owner to leaf localization.
+  8. `numNodesOnSubLvl` = 1 since we have only one leaf on the top.
+  9. Init `angleRelY` (rotation around relative Y axis). For the first leaf it does not matter. It will indicates on how many degree we should rotate around center of the sphere (360 / `numNodesOnSubLvl`)
+  10. Foreach `level` `member`:
+   * Copy `position` from `owner`. Compose base position.
+   * If we need to move down (if `numNodesOnSubLvl` <= 0)
+   * Apply a `angleRelX` rotation to `sphereVec` to move down the sphere by perpendicular to direction vector
+   * Add `angleRelX` to `summaricAngleRelX`
+   * Calculate how many nodes can be in the given radius after moving down:
+   * Calculate `subRadius` (sin(`summaricAngleRelX`) * radius)
+   * Calculate circuit length
+   * Calculate how many nodes (leafs) can be placed within given circuit
+   * If it is the last `subLvl` or there is no space for any leaf on `subLvl` or there are less nodes to be placed in next `subLvl` than in current:
+   * Take all leafs which have not been placed yet and place to `numNodesOnSubLvl`.
+   * Create reverse calculation to obtain the needed `angleRelX` from circuit length made by all `numNodesOnSubLvl`. (This is needed to fix the overlapping leafs)
+   * Apply new rotation to the `sphereVec`
+   * Calculate `angleRelY` knowing the number of nodes in `subLvl`
+   * Move `position` using `sphereVec` indicator.
+   * Render vertex in `position` in `direction` of the owner
+   * Render edge from owner to leaf
+   * Apply a `angleRelY` rotation to `sphereVec` (our direction & distance ndicator)
+   * Decrement `numNodesOnSubLvl`
 
 ## Next Steps:
 
