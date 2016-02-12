@@ -122,7 +122,7 @@ algorithm:
     4. Add children to `nodesToVisis` BFS list
 This stage is done in `app/render/model/graph.js`.
 
-4. _Rendering level phase._ This stage is included in _Rendernig phase_ but it also quite complex so i have created additional phase for that.
+4. _Rendering level phase._ This stage is included in _Renderig phase_ but it also quite complex so i have created additional phase for that.
 
  ![Level-Algorithm](https://github.com/Bplotka/w3-graph/blob/master/doc/w3-walrus-level-alg.png)
 
@@ -166,7 +166,7 @@ This stage is done in `app/render/model/graph.js`
   * Improve distribution of the children using more various angles based on the adjacent nodes. (check  `3 _Rendering phase._ -> i -> b -> b-> e` algorithm step)
   * Improve rendering algorithm with conflicts detection. If we firstly prepare the `levels` we will be aware of their size. As a result we can implement the [Knapsack algorithm](https://en.wikipedia.org/wiki/Knapsack_problem) which will distribute the `level` properly without conflicts and intersections. This will take a lot of work though. ((:
 
-2. Walrus could have panel for node information retrieval & editing. Work steps:
+2. Walrus could have panel for node information retrieval & editing. Work items:
   1. Extend node info in `app/data/data-structures.js`
   2. Create UI panel for parameters presentation and editing
   3. Exporting to `csv` module
